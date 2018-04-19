@@ -305,3 +305,8 @@ __pycache__/
 
 # OpenCover UI analysis results
 OpenCover/
+CMakeCache.txt
+CMakeFiles/
+JsonParserTest
+Makefile
+cmake_install.cmake
