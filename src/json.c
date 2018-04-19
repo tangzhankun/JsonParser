@@ -5,6 +5,7 @@
 #include <stddef.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/time.h>
 
 static int json_parse_value(const char ** cursor, json_value * parent);
 
@@ -582,9 +583,15 @@ void json_test_coarse(void)
 	printf(" OK\n");
 }
 
+long currentTime() {
+  struct timeval tp;
+  gettimeofday(&tp, NULL);
+  return tp.tv_sec * 1000 + tp.tv_usec / 1000;
+}
 
-void json_test_all(void)
+void json_test_all(int lines)
 {
+/*
 	json_test_value_invalid();
 	json_test_value_string();
 	json_test_value_number();
@@ -592,6 +599,18 @@ void json_test_all(void)
 	json_test_value_object();
 	json_test_value_literal();
 	json_test_coarse();
+*/
+	printf(" parse %d json lines\n", lines);
+	const char* string = "{\"a\":\"0\",\"b\":\"1\"}";
+        long start_time = currentTime();
+        for(size_t i = 0; i < lines; i++){
+	  json_value result = { .type = JSON_TYPE_NULL };
+	  json_parse_value(&string, &result);
+	  json_free_value(&result);
+        }
+        long end_time = currentTime();
+        long diff = end_time - start_time;
+	printf("It spends %ld ms to parse %d json lines\n", diff, lines);
 }
 
 
