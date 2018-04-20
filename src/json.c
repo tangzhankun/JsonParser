@@ -1,11 +1,13 @@
+#define _POSIX_C_SOURCE 199309L
 #include "json.h"
 
 #include <assert.h>
 #include <ctype.h>
 #include <stddef.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <sys/time.h>
+#include <time.h>
 
 static int json_parse_value(const char ** cursor, json_value * parent);
 
@@ -583,13 +585,13 @@ void json_test_coarse(void)
 	printf(" OK\n");
 }
 
-long currentTime() {
-  struct timeval tp;
-  gettimeofday(&tp, NULL);
-  return tp.tv_sec * 1000 + tp.tv_usec / 1000;
+double currentTime() {
+  struct timespec t;
+  clock_gettime(CLOCK_MONOTONIC, &t);
+  return ((double)(t.tv_nsec * 1.0e-9) + (double)(t.tv_sec));
 }
 
-void json_test_all(int lines)
+void json_test_all(int lines, char*jsonFilePath)
 {
 /*
 	json_test_value_invalid();
@@ -600,17 +602,40 @@ void json_test_all(int lines)
 	json_test_value_literal();
 	json_test_coarse();
 */
-	printf(" parse %d json lines\n", lines);
-	const char* string = "{\"a\":\"0\",\"b\":\"1\"}";
-        long start_time = currentTime();
+        printf("json file path: %s \n", jsonFilePath);
+        FILE *fp = fopen(jsonFilePath, "r");
+        if (!fp) {
+          fprintf(stderr, "Cannot open file %s, Exiting...\n", jsonFilePath);
+          exit(-1);
+        }
+        fseek(fp, 0L, SEEK_END);
+        int json_file_size = ftell(fp);
+	int json_line_size = json_file_size/lines;
+        rewind(fp);
+        char* input_json_str = malloc((json_file_size+1) * sizeof(char));
+        unsigned read_size = fread(input_json_str, sizeof(char), json_file_size, fp);
+        if (json_file_size != read_size) {
+          // Something went wrong, throw away the memory and set
+          // the buffer to NULL
+          fprintf(stderr, "file size doesn't match read size %d vs %d, Exiting...\n", json_file_size, read_size);
+          exit(-2);
+        }
+	printf(" parsing %d json lines\n", lines);
+	//const char* string = "{\"a\":\"0\",\"b\":\"1\"}";
+        double start_time = currentTime();
+        input_json_str[json_file_size] = '\0';
+        //printf("all lines \n%s.\n",input_json_str);
         for(size_t i = 0; i < lines; i++){
 	  json_value result = { .type = JSON_TYPE_NULL };
+          input_json_str[(i+1)*json_line_size - 1] = '\0';
+          printf("line %d: %s\n",i,&input_json_str[i*json_line_size]);
+          const char* string = &input_json_str[i*json_line_size];
 	  json_parse_value(&string, &result);
 	  json_free_value(&result);
         }
-        long end_time = currentTime();
-        long diff = end_time - start_time;
-	printf("It spends %ld ms to parse %d json lines\n", diff, lines);
+        double end_time = currentTime();
+        double diff = end_time - start_time;
+	printf("It spends %0.3f ms to parse %d json lines\n", diff*1e3, lines);
 }
 
 

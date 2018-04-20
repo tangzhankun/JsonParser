@@ -53,7 +53,7 @@ json_value* json_value_at(const json_value* root, size_t index);
 json_value * json_value_with_key(const json_value * root, const char * key);
 
 #ifdef BUILD_TEST
-void json_test_all(int);
+void json_test_all(int, char*);
 #endif 
 
 #endif

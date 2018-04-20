@@ -2,8 +2,7 @@ cmake_minimum_required (VERSION 2.8)
 project (JsonParser)
 
 set (CMAKE_C_STANDARD 99)
-set (CMAKE_C_FLAGS "-std=c99")
-
+set (CMAKE_C_FLAGS "-g -std=c99")
 file(GLOB SOURCES
     src/*.h
     src/*.c
