@@ -628,7 +628,7 @@ void json_test_all(int lines, char*jsonFilePath)
         for(size_t i = 0; i < lines; i++){
 	  json_value result = { .type = JSON_TYPE_NULL };
           input_json_str[(i+1)*json_line_size - 1] = '\0';
-          printf("line %d: %s\n",i,&input_json_str[i*json_line_size]);
+          //printf("line %d: %s\n",i,&input_json_str[i*json_line_size]);
           const char* string = &input_json_str[i*json_line_size];
 	  json_parse_value(&string, &result);
 	  json_free_value(&result);
